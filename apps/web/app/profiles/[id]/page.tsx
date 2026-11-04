@@ -1,0 +1,2 @@
+import {api} from '@/lib/api';import {notFound} from 'next/navigation';
+export default async function Profile({params}:{params:Promise<{id:string}>}){const u=await api<any>(`/profiles/${(await params).id}`);if(!u)notFound();return <section className="prose"><h1>{u.displayName}</h1>{u.bio&&<p>{u.bio}</p>}<p className="meta">Member since {new Date(u.createdAt).toLocaleDateString('en-IN')}</p><h2>Published articles</h2>{u.articles.map((a:any)=><p key={a.slug}><a href={`/articles/${a.slug}`}>{a.title}</a> — {a.summary}</p>)}</section>}

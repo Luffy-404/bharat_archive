@@ -1,0 +1,160 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+enum Role {
+ MEMBER
+ EDITOR
+ MODERATOR
+ ADMIN
+}
+enum PublicationStatus {
+ DRAFT
+ PUBLISHED
+ ARCHIVED
+}
+enum DiscussionKind {
+ DISCUSSION
+ QUESTION
+}
+enum ReportStatus {
+ OPEN
+ REVIEWED
+ DISMISSED
+ ACTIONED
+}
+model User {
+ id String @id @default(cuid())
+ email String @unique
+ username String? @unique
+ passwordHash String
+ displayName String
+ bio String?
+ role Role @default(MEMBER)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ articles Article[]
+ revisions ArticleRevision[]
+ discussions Discussion[]
+ comments Comment[]
+ reports ModerationReport[] @relation("Reporter")
+ savedArticles SavedArticle[]
+}
+model Topic {
+ id String @id @default(cuid())
+ slug String @unique
+ name String @unique
+ description String
+ parentId String?
+ parent Topic? @relation("TopicTree",fields:[parentId],references:[id])
+ children Topic[] @relation("TopicTree")
+ articles ArticleTopic[]
+ discussions DiscussionTopic[]
+ createdAt DateTime @default(now())
+ @@index([parentId])
+}
+model Article {
+ id String @id @default(cuid())
+ slug String @unique
+ title String
+ summary String
+ content String @db.Text
+ status PublicationStatus @default(DRAFT)
+ authorId String
+ author User @relation(fields:[authorId],references:[id])
+ publishedAt DateTime?
+ updatedAt DateTime @updatedAt
+ createdAt DateTime @default(now())
+ topics ArticleTopic[]
+ sources ArticleSource[]
+ revisions ArticleRevision[]
+ reports ModerationReport[]
+ savedBy SavedArticle[]
+ @@index([status,publishedAt])
+}
+model SavedArticle {
+ userId String
+ articleId String
+ createdAt DateTime @default(now())
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ article Article @relation(fields:[articleId],references:[id],onDelete:Cascade)
+ @@id([userId,articleId])
+ @@index([articleId])
+}
+model ArticleTopic {
+ articleId String
+ topicId String
+ article Article @relation(fields:[articleId],references:[id],onDelete:Cascade)
+ topic Topic @relation(fields:[topicId],references:[id],onDelete:Cascade)
+ @@id([articleId,topicId])
+ @@index([topicId])
+}
+model ArticleSource {
+ id String @id @default(cuid())
+ articleId String
+ article Article @relation(fields:[articleId],references:[id],onDelete:Cascade)
+ title String
+ url String
+ license String?
+ accessedAt DateTime?
+}
+model ArticleRevision {
+ id String @id @default(cuid())
+ articleId String
+ authorId String
+ article Article @relation(fields:[articleId],references:[id],onDelete:Cascade)
+ author User @relation(fields:[authorId],references:[id])
+ title String
+ content String @db.Text
+ note String?
+ createdAt DateTime @default(now())
+ @@index([articleId,createdAt])
+}
+model Discussion {
+ id String @id @default(cuid())
+ slug String @unique
+ title String
+ body String @db.Text
+ kind DiscussionKind @default(DISCUSSION)
+ status PublicationStatus @default(PUBLISHED)
+ authorId String
+ author User @relation(fields:[authorId],references:[id])
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ topics DiscussionTopic[]
+ comments Comment[]
+ @@index([kind,status,createdAt])
+}
+model DiscussionTopic {
+ discussionId String
+ topicId String
+ discussion Discussion @relation(fields:[discussionId],references:[id],onDelete:Cascade)
+ topic Topic @relation(fields:[topicId],references:[id],onDelete:Cascade)
+ @@id([discussionId,topicId])
+}
+model Comment {
+ id String @id @default(cuid())
+ body String @db.Text
+ authorId String
+ discussionId String?
+ parentId String?
+ author User @relation(fields:[authorId],references:[id])
+ discussion Discussion? @relation(fields:[discussionId],references:[id],onDelete:Cascade)
+ parent Comment? @relation("CommentTree",fields:[parentId],references:[id])
+ replies Comment[] @relation("CommentTree")
+ createdAt DateTime @default(now())
+}
+model ModerationReport {
+ id String @id @default(cuid())
+ reason String
+ status ReportStatus @default(OPEN)
+ reporterId String
+ articleId String?
+ reporter User @relation("Reporter",fields:[reporterId],references:[id])
+ article Article? @relation(fields:[articleId],references:[id])
+ createdAt DateTime @default(now())
+ @@index([status,createdAt])
+}
