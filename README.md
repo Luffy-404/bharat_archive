@@ -14,4 +14,4 @@ An independent, self-hostable India-focused knowledge and community platform. It
 
 ## Notes
 
-Public pages are server rendered and have metadata, sitemap, robots, canonical URLs, and structured data. The API owns sessions, authorization, validation, rate limits, moderation, and content lifecycle. Media is intentionally not part of v1; an object-storage adapter can be introduced without coupling it to content tables.
+Public reader pages are server rendered and have baseline metadata, a sitemap, and robots rules. Canonical URLs and structured data are not implemented yet. The API owns bearer-token authentication, authorization, validation, and content lifecycle; rate limiting and a moderation workflow UI are not implemented. Media is intentionally not part of v1; an object-storage adapter can be introduced without coupling it to content tables.
