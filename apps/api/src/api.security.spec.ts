@@ -17,14 +17,14 @@ describe('public response safety',()=>{
   await controller.list();await expect(controller.one('missing')).rejects.toBeInstanceOf(NotFoundException);
   expect(findMany.mock.calls[0][0].include.author.select).toEqual(publicAuthorSelect);
   expect(findFirst.mock.calls[0][0].include.author.select).toEqual(publicAuthorSelect);
-  expect(findFirst.mock.calls[0][0].include.revisions.include.author.select).toEqual(publicAuthorSelect);
+  expect(findFirst.mock.calls[0][0].include).not.toHaveProperty('revisions');
  });
 
  it('uses safe author projections for topic, discussion, and search public queries',async()=>{
   const topicFindUnique=jest.fn().mockResolvedValue({});
   const discussionFindMany=jest.fn().mockResolvedValue([]);const discussionFindFirst=jest.fn().mockResolvedValue(null);
   const articleFindMany=jest.fn().mockResolvedValue([]);const searchTopicFindMany=jest.fn().mockResolvedValue([]);
-  const db={topic:{findUnique:topicFindUnique},client:{discussion:{findMany:discussionFindMany,findFirst:discussionFindFirst},article:{findMany:articleFindMany},topic:{findMany:searchTopicFindMany}}} as unknown as Db;
+  const db={topic:{findUnique:topicFindUnique,findMany:searchTopicFindMany},discussion:{findMany:discussionFindMany,findFirst:discussionFindFirst},article:{findMany:articleFindMany}} as unknown as Db;
   await new TopicsController(db).one('history');await expect(new DiscussionsController(db).one('missing')).rejects.toBeInstanceOf(NotFoundException);await new SearchController(db).search('history');
   const topicInclude=topicFindUnique.mock.calls[0][0].include;
   expect(topicInclude.articles.include.article.include.author.select).toEqual(publicAuthorSelect);
@@ -40,7 +40,7 @@ describe('public response safety',()=>{
 describe('public content visibility',()=>{
  it('limits article and discussion detail lookups to published content',async()=>{
   const articleFindFirst=jest.fn().mockResolvedValue(null);const discussionFindFirst=jest.fn().mockResolvedValue(null);
-  const db={article:{findFirst:articleFindFirst},client:{discussion:{findFirst:discussionFindFirst}}} as unknown as Db;
+  const db={article:{findFirst:articleFindFirst},discussion:{findFirst:discussionFindFirst}} as unknown as Db;
   await expect(new ArticlesController(db).one('draft-or-archived')).rejects.toBeInstanceOf(NotFoundException);
   await expect(new DiscussionsController(db).one('draft-or-archived')).rejects.toBeInstanceOf(NotFoundException);
   expect(articleFindFirst.mock.calls[0][0].where).toEqual({slug:'draft-or-archived',status:'PUBLISHED'});
@@ -85,7 +85,7 @@ describe('topic relation writes',()=>{
 
  it('deduplicates valid discussion topics, rejects missing IDs, and supports no topics',async()=>{
   const findMany=jest.fn().mockResolvedValueOnce([{id:'topic-1'}]).mockResolvedValueOnce([]);const create=jest.fn().mockResolvedValue({id:'discussion-1'});
-  const controller=new DiscussionsController({topic:{findMany},client:{discussion:{create}}} as unknown as Db);
+  const controller=new DiscussionsController({topic:{findMany},discussion:{create}} as unknown as Db);
   await controller.create({user:{sub:'member-1'}},{...discussionInput,topicIds:['topic-1','topic-1']} as any);
   expect(create.mock.calls[0][0].data.topics).toEqual({create:[{topicId:'topic-1'}]});
   expect(create.mock.calls[0][0].data).not.toHaveProperty('topicIds');

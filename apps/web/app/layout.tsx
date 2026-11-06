@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css'; import './auth.css'; import './account.css'; import './home-icons.css'; import './homepage.css'; import './site-shell.css'; import './article-reading.css'; import './typography.css';
+import './globals.css'; import './auth.css'; import './account.css'; import './discussion.css'; import './home-icons.css'; import './homepage.css'; import './site-shell.css'; import './article-reading.css'; import './typography.css';
 import { SiteShell } from '@/components/site-shell';
 const inter=Inter({subsets:['latin'],display:'swap',variable:'--font-inter'});
 const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';

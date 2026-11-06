@@ -23,9 +23,15 @@ The initial MVP is defined in [MVP_SCOPE.md](MVP_SCOPE.md). Before broader featu
 
 ## Upcoming phases (planned, not implemented)
 
-### Phase 1: launch reliability and scope decisions
+### Phase 1: production-readiness audit (completed; procedures proposed, not implemented)
 
-Production host, secrets, backup/restore, monitoring, rate/abuse protection, legal/privacy/community policy, source/licensing policy, and a decision on whether public discussions are writable at launch.
+- Audited the deployment shape, Compose configuration, environment handling, CORS, health endpoint, builds, migrations, logging, rate-limit status, and CI/CD status.
+- Recorded a cost-conscious hosting recommendation, minimum backup/restore policy, monitoring/incident procedures, secret ownership, and abuse-control policy in [PRODUCTION_RUNBOOK.md](PRODUCTION_RUNBOOK.md).
+- No infrastructure, application code, schema, dependency, or deployment change was made in this phase.
+
+### Phase 1a: launch reliability implementation and approvals
+
+Approve the production provider/budget and owners; then implement production hosting, secret storage, migrations, backups/restore rehearsal, monitoring, CI/CD, rate/abuse protection, legal/privacy/community policy, source/licensing policy, and a decision on whether public discussions are writable at launch. The audit does not count as implementation.
 
 ### Phase 2: safe authoring and optional community workflow
 
@@ -37,7 +43,7 @@ Dynamic sitemap/canonicals/structured data, noindex strategy, richer metadata, c
 
 ### Post-MVP: operating at scale
 
-Deployment automation, monitoring, rate limiting/abuse protection, backups, auditability, performance strategy, and media/object-storage integration. Depends on hosting, privacy, budget, and retention decisions.
+High availability, longer log retention, auditability, performance strategy, media/object-storage integration, and scaling beyond the minimum launch operations. Depends on hosting, privacy, budget, and retention decisions.
 
 ### Explicitly deferred
 

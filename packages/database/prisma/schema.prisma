@@ -26,6 +26,11 @@ enum ReportStatus {
  DISMISSED
  ACTIONED
 }
+enum ModerationAction {
+ REPORT_REVIEWED
+ REPORT_DISMISSED
+ CONTENT_HIDDEN
+}
 model User {
  id String @id @default(cuid())
  email String @unique
@@ -41,6 +46,7 @@ model User {
  discussions Discussion[]
  comments Comment[]
  reports ModerationReport[] @relation("Reporter")
+ moderationActions ModerationAudit[] @relation("ModeratorActor")
  savedArticles SavedArticle[]
 }
 model Topic {
@@ -126,6 +132,7 @@ model Discussion {
  updatedAt DateTime @updatedAt
  topics DiscussionTopic[]
  comments Comment[]
+ reports ModerationReport[]
  @@index([kind,status,createdAt])
 }
 model DiscussionTopic {
@@ -145,7 +152,10 @@ model Comment {
  discussion Discussion? @relation(fields:[discussionId],references:[id],onDelete:Cascade)
  parent Comment? @relation("CommentTree",fields:[parentId],references:[id])
  replies Comment[] @relation("CommentTree")
+ hiddenAt DateTime?
+ reports ModerationReport[]
  createdAt DateTime @default(now())
+ @@index([discussionId,hiddenAt,createdAt])
 }
 model ModerationReport {
  id String @id @default(cuid())
@@ -153,8 +163,23 @@ model ModerationReport {
  status ReportStatus @default(OPEN)
  reporterId String
  articleId String?
+ discussionId String?
+ commentId String?
  reporter User @relation("Reporter",fields:[reporterId],references:[id])
  article Article? @relation(fields:[articleId],references:[id])
+ discussion Discussion? @relation(fields:[discussionId],references:[id])
+ comment Comment? @relation(fields:[commentId],references:[id])
+ audits ModerationAudit[]
  createdAt DateTime @default(now())
  @@index([status,createdAt])
+}
+model ModerationAudit {
+ id String @id @default(cuid())
+ reportId String
+ actorId String
+ action ModerationAction
+ report ModerationReport @relation(fields:[reportId],references:[id],onDelete:Cascade)
+ actor User @relation("ModeratorActor",fields:[actorId],references:[id])
+ createdAt DateTime @default(now())
+ @@index([reportId,createdAt])
 }

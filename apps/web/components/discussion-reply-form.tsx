@@ -1,0 +1,7 @@
+'use client';
+
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const base=process.env.NEXT_PUBLIC_API_URL||'http://localhost:4000/api';
+export function DiscussionReplyForm({discussionId}:{discussionId:string}){const router=useRouter(),[body,setBody]=useState(''),[message,setMessage]=useState(''),[pending,setPending]=useState(false);async function submit(event:FormEvent){event.preventDefault();setPending(true);setMessage('');try{const token=sessionStorage.getItem('bharatarchive.accessToken');const response=await fetch(`${base}/discussions/${discussionId}/comments`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({body:body.trim()})});const data=await response.json().catch(()=>null);if(!response.ok)throw new Error(Array.isArray(data?.message)?data.message.join(' '):data?.message||'Unable to post reply.');setBody('');setMessage('Reply posted.');router.refresh()}catch(error){setMessage(error instanceof Error?error.message:'Unable to post reply.')}finally{setPending(false)}}return <section className="discussion-reply"><h2>Add a reply</h2><form onSubmit={submit}><label>Your reply<textarea value={body} onChange={event=>setBody(event.target.value)} minLength={2} maxLength={10000} required/></label>{message&&<p className="account-feedback" role="status">{message}</p>}<button disabled={pending}>{pending?'Posting…':'Post reply'}</button></form></section>}

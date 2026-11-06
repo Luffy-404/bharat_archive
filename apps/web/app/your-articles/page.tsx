@@ -1,1 +1,2 @@
-import {AccountPage} from '@/components/account-page'; export default function Yours(){return <AccountPage kind="articles"/>}
+import { EditorArticleList } from '@/components/editor-article-list';
+export default function Yours(){return <EditorArticleList/>}
